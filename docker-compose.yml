@@ -1,0 +1,41 @@
+﻿version: '3.9'
+
+services:
+  warehouse.api:
+    image: ${DOCKER_REGISTRY-}warehouseapi
+    build:
+      context: .
+      dockerfile: Warehouse.Api/Dockerfile
+    container_name: warehouse-api
+    depends_on:
+      - warehouse-db
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ConnectionStrings__DefaultConnection: "Host=warehouse-db;Port=5432;Database=warehouse_db;Username=warehouse_user;Password=warehouse_pass"
+    ports:
+      - "8081:80"
+    networks:
+      - warehouse-network
+
+  # --- PostgreSQL database ---
+  warehouse-db:
+    image: postgres:16
+    container_name: warehouse-db
+    restart: always
+    environment:
+      POSTGRES_USER: warehouse_user
+      POSTGRES_PASSWORD: warehouse_pass
+      POSTGRES_DB: warehouse_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - warehouse_data:/var/lib/postgresql/data
+    networks:
+      - warehouse-network
+
+volumes:
+  warehouse_data:
+
+networks:
+  warehouse-network:
+    driver: bridge
