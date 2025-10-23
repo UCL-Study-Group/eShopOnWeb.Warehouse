@@ -1,3 +1,5 @@
+using RepoDb;
+using Warehouse.Infrastructure;
 
 namespace Warehouse.Api
 {
@@ -7,7 +9,11 @@ namespace Warehouse.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            // Initialize RepoDb for PostgreSQL
+            GlobalConfiguration.Setup().UsePostgreSql();
+
             // Add services to the container.
+            builder.Services.AddInfrastructure(builder.Configuration);
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

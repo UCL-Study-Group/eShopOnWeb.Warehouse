@@ -1,8 +1,11 @@
 ﻿using FluentResults;
 using Microsoft.Data.SqlClient;
+using Npgsql;
+using Microsoft.Extensions.Options;
 using RepoDb;
 using System.Threading;
 using Warehouse.Common.Models.Base;
+using Warehouse.Infrastructure.Models;
 using Warehouse.Infrastructure.Repositories.Interfaces;
 
 namespace Warehouse.Infrastructure.Repositories;
@@ -11,9 +14,10 @@ public class PostgresRepository<T> : IDbRepository<T> where T : BaseModel
 {
     private readonly string _connectionString;
 
-    public PostgresRepository(string connectionString)
+    public PostgresRepository(IOptions<DbCredentials> options)
     {
-        _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+        _connectionString = options.Value.ConnectionString
+            ?? throw new ArgumentNullException(nameof(options));
     }
 
     public async Task<Result<T>> CreateAsync(T entity)
@@ -21,7 +25,7 @@ public class PostgresRepository<T> : IDbRepository<T> where T : BaseModel
         try
         {
             ArgumentNullException.ThrowIfNull(entity);
-            await using var connection = new SqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
             await connection.InsertAsync(entity);
 
             return Result.Ok(entity);
@@ -36,7 +40,7 @@ public class PostgresRepository<T> : IDbRepository<T> where T : BaseModel
     {
         try
         {
-            await using var connection = new SqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
             await connection.DeleteAsync(id);
 
             return Result.Ok();
@@ -51,7 +55,7 @@ public class PostgresRepository<T> : IDbRepository<T> where T : BaseModel
     {
         try
         {
-            await using var connection = new SqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
             var result = await connection.QueryAllAsync<T>();
 
             return Result.Ok(result);
@@ -66,7 +70,7 @@ public class PostgresRepository<T> : IDbRepository<T> where T : BaseModel
     {
         try
         {
-            await using var connection = new SqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
             var result = await connection.QueryAsync<T>(id);
 
             return Result.Ok(result.FirstOrDefault());
@@ -82,7 +86,7 @@ public class PostgresRepository<T> : IDbRepository<T> where T : BaseModel
         try
         {
             ArgumentNullException.ThrowIfNull(entity);
-            await using var connection = new SqlConnection(_connectionString);
+            await using var connection = new NpgsqlConnection(_connectionString);
             await connection.UpdateAsync(entity);
 
             return Result.Ok();
