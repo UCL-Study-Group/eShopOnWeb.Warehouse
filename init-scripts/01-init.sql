@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS ItemStock (
+    Id PRIMARY KEY,
+    Amount INT NOT NULL
+);
